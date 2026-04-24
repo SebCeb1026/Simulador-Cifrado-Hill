@@ -3,139 +3,131 @@ import numpy as np
 import time
 import random
 
-# Configuración de la página
-st.set_page_config(page_title="IUE Hill Quiz Challenge", layout="centered")
+st.set_page_config(page_title="IUE Hill Quiz - Full Color", layout="centered")
 
-# Estilos para que se vea más profesional
+# --- DISEÑO DE COLORES PERSONALIZADO ---
 st.markdown("""
     <style>
-    .stButton>button { width: 100%; border-radius: 10px; height: 3.5em; font-size: 18px; font-weight: bold; }
-    .main-title { text-align: center; color: #2E7D32; }
-    .stat-box { padding: 20px; border-radius: 10px; text-align: center; background-color: #f0f2f6; }
+    /* Fondo general */
+    .stApp { background-color: #f4f7f6; }
+    
+    /* Botones de opciones */
+    .stButton>button { 
+        width: 100%; 
+        border-radius: 15px; 
+        height: 3.5em; 
+        font-weight: bold; 
+        background-color: #ffffff;
+        color: #1E88E5;
+        border: 2px solid #1E88E5;
+        transition: 0.3s;
+    }
+    .stButton>button:hover {
+        background-color: #1E88E5;
+        color: white;
+    }
+    
+    /* Títulos y textos */
+    .main-title { text-align: center; color: #0D47A1; font-family: 'Arial'; }
+    .question-text { font-size: 22px; font-weight: bold; color: #333; text-align: center; }
+    
+    /* Cajas de resumen */
+    .good-box { padding: 20px; border-radius: 10px; background-color: #C8E6C9; border: 2px solid #4CAF50; text-align: center; }
+    .bad-box { padding: 20px; border-radius: 10px; background-color: #FFCDD2; border: 2px solid #F44336; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS DE PREGUNTAS (Teoría y Práctica) ---
-def obtener_preguntas():
-    return [
-        {
-            "tipo": "teoria",
-            "pregunta": "¿En qué año inventó Lester S. Hill este sistema de cifrado?",
-            "opciones": ["1929", "1945", "1914", "1935"],
-            "correcta": "1929"
-        },
-        {
-            "tipo": "practica",
-            "pregunta": "Cifra 'MA' usando la matriz clave del proyecto.",
-            "opciones": ["KY", "AT", "RI", "ZE"],
-            "correcta": "KY"
-        },
-        {
-            "tipo": "teoria",
-            "pregunta": "¿Cuál es la base del cifrado Hill según el texto?",
-            "opciones": ["Aritmética Modular", "Cifrado César", "Código Binario", "Física Cuántica"],
-            "correcta": "Aritmética Modular"
-        },
-        {
-            "tipo": "teoria",
-            "pregunta": "En el sistema Hill, ¿cómo se representan las letras?",
-            "opciones": ["Como números del 0 al 25", "Como símbolos químicos", "Como códigos de barras", "Como números del 1 al 100"],
-            "correcta": "Como números del 0 al 25"
-        },
-        {
-            "tipo": "practica",
-            "pregunta": "Si el resultado de una operación es 36, ¿cuál es su valor en Módulo 26?",
-            "opciones": ["10", "15", "5", "0"],
-            "correcta": "10"
-        },
-        {
-            "tipo": "teoria",
-            "pregunta": "¿Qué operación matemática es el corazón del Cifrado Hill?",
-            "opciones": ["Multiplicación de Matrices", "Raíz Cuadrada", "Logaritmos", "Integrales"],
-            "correcta": "Multiplicación de Matrices"
-        },
-        {
-            "tipo": "practica",
-            "pregunta": "¿A qué número corresponde la letra 'D' en la tabla A=0, B=1...?",
-            "opciones": ["3", "4", "2", "5"],
-            "correcta": "3"
-        },
-        {
-            "tipo": "teoria",
-            "pregunta": "¿Para qué sirve el Cifrado Hill?",
-            "opciones": ["Ocultar mensajes (Criptografía)", "Calcular distancias", "Diseñar edificios", "Hacer música"],
-            "correcta": "Ocultar mensajes (Criptografía)"
-        },
-        {
-            "tipo": "practica",
-            "pregunta": "Si K es 10 y multiplicamos por 1, ¿qué letra obtenemos?",
-            "opciones": ["K", "A", "Z", "M"],
-            "correcta": "K"
-        },
-        {
-            "tipo": "teoria",
-            "pregunta": "En la matriz clave del ejercicio 1, ¿cuál es el valor de K[1,1]?",
-            "opciones": ["5", "3", "2", "0"],
-            "correcta": "5"
-        }
-    ]
-
-# --- INICIALIZACIÓN DE VARIABLES ---
+# --- INICIALIZACIÓN ---
+if 'jugando' not in st.session_state:
+    st.session_state.jugando = False
 if 'indice' not in st.session_state:
     st.session_state.indice = 0
     st.session_state.buenas = 0
     st.session_state.malas = 0
-    st.session_state.preguntas = obtener_preguntas()
     st.session_state.terminado = False
 
-# --- LÓGICA DEL QUIZ ---
-st.markdown("<h1 class='main-title'>🔐 Reto Hill: Teoría y Práctica</h1>", unsafe_allow_html=True)
+# --- PREGUNTAS ---
+def obtener_quiz():
+    return [
+        {"p": "¿En qué año inventó Lester S. Hill este sistema?", "o": ["1929", "1945", "1914", "1935"], "c": "1929"},
+        {"p": "Cifra 'MA' con la matriz del proyecto ($K_{00}=3, K_{01}=3...$)", "o": ["KY", "AT", "RI", "ZE"], "c": "KY"},
+        {"p": "¿Cuál es la base del cifrado Hill?", "o": ["Aritmética Modular", "Cifrado César", "Código Binario", "Física Cuántica"], "c": "Aritmética Modular"},
+        {"p": "Si el resultado es 36, ¿cuál es su valor en Módulo 26?", "o": ["10", "15", "5", "0"], "c": "10"},
+        {"p": "¿Qué operación matemática usa el Cifrado Hill?", "o": ["Multiplicación de Matrices", "Raíz Cuadrada", "Logaritmos", "Integrales"], "c": "Multiplicación de Matrices"},
+        {"p": "En el sistema Hill, la letra A es igual a...", "o": ["0", "1", "26", "-1"], "c": "0"},
+        {"p": "¿A qué número corresponde la letra 'D'?", "o": ["3", "4", "2", "5"], "c": "3"},
+        {"p": "¿Cuál es el propósito principal del Cifrado Hill?", "o": ["Criptografía", "Calcular distancias", "Arquitectura", "Música"], "c": "Criptografía"},
+        {"p": "Si K=10 y multiplicas por 1, ¿qué letra obtienes?", "o": ["K", "A", "Z", "M"], "c": "K"},
+        {"p": "En la matriz del proyecto, ¿cuál es el valor de $K_{11}$?", "o": ["5", "3", "2", "0"], "c": "5"}
+    ]
 
-if not st.session_state.terminado:
+if 'preguntas' not in st.session_state:
+    st.session_state.preguntas = obtener_quiz()
+
+# --- PANTALLA 1: EXPLICACIÓN ---
+if not st.session_state.jugando:
+    st.markdown("<h1 class='main-title'>🔐 Introducción al Cifrado Hill</h1>", unsafe_allow_html=True)
+    st.info("""
+    ### 📝 Guía Rápida para Ganar:
+    1. **Letras ↔ Números:** A=0, B=1... hasta Z=25.
+    2. **Fórmula:** $C = K \cdot P \pmod{26}$.
+    3. **Matrices:** Se multiplica la matriz clave por la palabra.
+    4. **El Reloj:** Si el resultado pasa de 26, se busca el residuo (Módulo 26).
+    """)
+    st.warning("⚠️ **Dato clave:** La respuesta correcta cambia de lugar en cada turno.")
+    
+    if st.button("🎮 ¡EMPEZAR DESAFÍO!"):
+        st.session_state.jugando = True
+        st.rerun()
+
+# --- PANTALLA 2: EL QUIZ ---
+elif not st.session_state.terminado:
     actual = st.session_state.preguntas[st.session_state.indice]
     
-    st.subheader(f"Pregunta {st.session_state.indice + 1} de 10")
-    st.info(actual["pregunta"])
+    # Aleatorizar opciones solo una vez por pregunta
+    if f"opciones_{st.session_state.indice}" not in st.session_state:
+        ops = actual["o"].copy()
+        random.shuffle(ops)
+        st.session_state[f"opciones_{st.session_state.indice}"] = ops
     
-    if actual["tipo"] == "practica":
-        st.write("💡 *Pista: Usa la tabla A=0...Z=25 y la matriz del proyecto.*")
-
-    # Botones de opciones
+    st.markdown(f"<p style='text-align:right; color:grey;'>Pregunta {st.session_state.indice + 1} de 10</p>", unsafe_allow_html=True)
+    st.markdown(f"<p class='question-text'>{actual['p']}</p>", unsafe_allow_html=True)
+    
+    opciones_mezcladas = st.session_state[f"opciones_{st.session_state.indice}"]
+    
     cols = st.columns(2)
-    for i, opcion in enumerate(actual["opciones"]):
+    for i, opc in enumerate(opciones_mezcladas):
         with cols[i % 2]:
-            if st.button(opcion, key=f"btn_{st.session_state.indice}_{i}"):
-                if opcion == actual["correcta"]:
-                    st.success("¡CORRECTO! ✨")
+            if st.button(opc):
+                if opc == actual["c"]:
+                    st.toast("¡Excelente! 🎯", icon="✅")
                     st.session_state.buenas += 1
                 else:
-                    st.error(f"INCORRECTO ❌. La respuesta era: {actual['correcta']}")
+                    st.toast(f"Error ❌. Era: {actual['c']}", icon="⚠️")
+                    st.session_state.malas += 1
                 
-                time.sleep(1.5)
-                
+                time.sleep(1)
                 if st.session_state.indice < 9:
                     st.session_state.indice += 1
                 else:
                     st.session_state.terminado = True
                 st.rerun()
 
-# --- RESUMEN FINAL ---
+# --- PANTALLA 3: RESUMEN FINAL ---
 else:
     st.balloons()
-    st.header("🏁 ¡Desafío Completado!")
+    st.markdown("<h1 class='main-title'>🏁 ¡Resultados Finales!</h1>", unsafe_allow_html=True)
     
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown(f"<div class='stat-box'><h3>✅ Correctas</h3><h1 style='color:green'>{st.session_state.buenas}</h1></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='good-box'><h3>Correctas</h3><h1>{st.session_state.buenas}</h1></div>", unsafe_allow_html=True)
     with c2:
-        st.markdown(f"<div class='stat-box'><h3>❌ Incorrectas</h3><h1 style='color:red'>{st.session_state.malas}</h1></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='bad-box'><h3>Incorrectas</h3><h1>{st.session_state.malas}</h1></div>", unsafe_allow_html=True)
     
     total = st.session_state.buenas * 10
-    st.subheader(f"Puntaje Final: {total} / 100")
+    st.markdown(f"<h2 style='text-align:center;'>Tu Puntaje: {total}/100</h2>", unsafe_allow_html=True)
     
-    if st.button("Intentar de nuevo"):
-        st.session_state.indice = 0
-        st.session_state.buenas = 0
-        st.session_state.malas = 0
-        st.session_state.terminado = False
+    if st.button("🔄 Reiniciar Aplicación"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
         st.rerun()
