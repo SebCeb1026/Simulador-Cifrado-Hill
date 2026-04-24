@@ -3,7 +3,7 @@ import numpy as np
 import time
 import random
 
-st.set_page_config(page_title="IUE Hill Quiz - Clean", layout="centered")
+st.set_page_config(page_title="IUE Hill Quiz", layout="centered")
 
 # --- DISEÑO ---
 st.markdown("""
@@ -29,19 +29,19 @@ if 'indice' not in st.session_state:
     st.session_state.malas = 0
     st.session_state.terminado = False
 
-# --- PREGUNTAS ---
+# --- PREGUNTAS SIMPLIFICADAS ---
 def obtener_quiz():
     return [
-        {"p": "¿En qué año inventó Lester S. Hill este sistema?", "o": ["1929", "1945", "1914", "1935"], "c": "1929"},
-        {"p": "Cifra 'MA' con la matriz del proyecto ($K_{00}=3, K_{01}=3...$)", "o": ["KY", "AT", "RI", "ZE"], "c": "KY"},
-        {"p": "¿Cuál es la base del cifrado Hill?", "o": ["Aritmética Modular", "Cifrado César", "Código Binario", "Física Cuántica"], "c": "Aritmética Modular"},
-        {"p": "Si el resultado es 36, ¿cuál es su valor en Módulo 26?", "o": ["10", "15", "5", "0"], "c": "10"},
-        {"p": "¿Qué operación matemática usa el Cifrado Hill?", "o": ["Multiplicación de Matrices", "Raíz Cuadrada", "Logaritmos", "Integrales"], "c": "Multiplicación de Matrices"},
-        {"p": "En el sistema Hill, la letra A es igual a...", "o": ["0", "1", "26", "-1"], "c": "0"},
-        {"p": "¿A qué número corresponde la letra 'D'?", "o": ["3", "4", "2", "5"], "c": "3"},
-        {"p": "¿Cuál es el propósito principal del Cifrado Hill?", "o": ["Criptografía", "Calcular distancias", "Arquitectura", "Música"], "c": "Criptografía"},
-        {"p": "Si K=10 y multiplicas por 1, ¿qué letra obtienes?", "o": ["K", "A", "Z", "M"], "c": "K"},
-        {"p": "En la matriz del proyecto, ¿cuál es el valor de $K_{11}$?", "o": ["5", "3", "2", "0"], "c": "5"}
+        {"p": "¿En qué año se creó oficialmente este sistema de cifrado?", "o": ["1929", "1945", "1914", "1935"], "c": "1929"},
+        {"p": "Si usas la clave de nuestro proyecto, ¿cuál es el resultado de cifrar 'MA'?", "o": ["KY", "AT", "RI", "ZE"], "c": "KY"},
+        {"p": "¿Cómo se llama el método matemático que usa el 'residuo' de una división?", "o": ["Aritmética Modular", "Cálculo Integral", "Álgebra de Boole", "Trigonometría"], "c": "Aritmética Modular"},
+        {"p": "Si el cálculo final te da 36, ¿qué número queda tras aplicar el Módulo 26?", "o": ["10", "15", "5", "0"], "c": "10"},
+        {"p": "¿Qué herramienta del Álgebra Lineal es la 'llave' en este cifrado?", "o": ["Las Matrices", "Las Derivadas", "Los Vectores Propios", "Las Integrales"], "c": "Las Matrices"},
+        {"p": "En nuestra tabla de conversión, ¿qué número le asignamos a la letra 'A'?", "o": ["0", "1", "26", "A"], "c": "0"},
+        {"p": "Si contamos A=0, B=1, C=2... ¿Qué número le toca a la letra 'D'?", "o": ["3", "4", "2", "5"], "c": "3"},
+        {"p": "¿Cuál es el objetivo principal de este trabajo?", "o": ["Protección de mensajes", "Diseño de puentes", "Contabilidad", "Creación de música"], "c": "Protección de mensajes"},
+        {"p": "Si una operación da 10, ¿qué letra buscamos en la tabla?", "o": ["K", "A", "Z", "M"], "c": "K"},
+        {"p": "En la matriz de nuestro ejercicio, ¿cuál es el último número (abajo a la derecha)?", "o": ["5", "3", "2", "0"], "c": "5"}
     ]
 
 if 'preguntas' not in st.session_state:
@@ -49,16 +49,16 @@ if 'preguntas' not in st.session_state:
 
 # --- PANTALLA 1: EXPLICACIÓN ---
 if not st.session_state.jugando:
-    st.markdown("<h1 class='main-title'>🔵 Cifrado Hill: Fundamentos Técnicos</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='main-title'>🔵 Cifrado Hill: Guía del Reto</h1>", unsafe_allow_html=True)
     st.markdown("""
-    ### 📂 Resumen del Proyecto
-    El **Cifrado Hill** es un sistema criptográfico de sustitución basado en álgebra lineal.
+    ### 📂 ¿Qué necesitas saber?
+    Para ganar este reto, recuerda estos 3 puntos clave de nuestra exposición:
     
-    - **Representación:** Cada letra tiene un valor numérico ($A=0, B=1, ..., Z=25$).
-    - **Matriz K:** Funciona como la llave para transformar el mensaje.
-    - **Aritmética Modular:** Aplicamos **Módulo 26** para que el resultado siempre sea una letra válida.
+    1. **Los Números:** Cada letra es un número del **0 al 25** (A es 0).
+    2. **La Clave:** Usamos una **Matriz** para transformar las palabras.
+    3. **El Residuo:** Si un número se pasa de 26, usamos lo que sobra (Módulo 26).
     
-    *Prepárate para aplicar estos conceptos en el siguiente reto.*
+    *¡Suerte! Demuestra lo que aprendiste hoy.*
     """)
     if st.button("Inicio de prueba"):
         st.session_state.jugando = True
@@ -73,11 +73,11 @@ elif not st.session_state.terminado:
         random.shuffle(ops)
         st.session_state[f"opciones_{st.session_state.indice}"] = ops
     
-    st.markdown(f"<p style='text-align:right; color:#778DA9;'>Pregunta {st.session_state.indice + 1} / 10</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align:right; color:#778DA9;'>Reto {st.session_state.indice + 1} de 10</p>", unsafe_allow_html=True)
     
     st.markdown(f"""
     <div class='question-box'>
-        <h3 style='text-align:center; margin:0;'>{actual['p']}</h3>
+        <h3 style='text-align:center; margin:0; line-height: 1.4;'>{actual['p']}</h3>
     </div>
     """, unsafe_allow_html=True)
     
@@ -87,10 +87,10 @@ elif not st.session_state.terminado:
         with cols[i % 2]:
             if st.button(opc):
                 if opc == actual["c"]:
-                    st.success("¡Bien hecho! 💎")
+                    st.success("¡Correcto! 💎")
                     st.session_state.buenas += 1
                 else:
-                    st.error(f"Incorrecto. Era: {actual['c']}")
+                    st.error(f"Incorrecto ❌")
                     st.session_state.malas += 1
                 time.sleep(0.8)
                 if st.session_state.indice < 9:
@@ -102,14 +102,14 @@ elif not st.session_state.terminado:
 # --- PANTALLA 3: RESUMEN FINAL ---
 else:
     st.balloons()
-    st.markdown("<h1 class='main-title'>🏁 Informe de Resultados</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='main-title'>🏁 ¡Fin del Reto!</h1>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
-    with c1: st.markdown(f"<div style='padding:20px; border-radius:15px; background-color:#1B4332; text-align:center;'><h3>Correctas</h3><h1>{st.session_state.buenas}</h1></div>", unsafe_allow_html=True)
+    with c1: st.markdown(f"<div style='padding:20px; border-radius:15px; background-color:#1B4332; text-align:center;'><h3>Buenas</h3><h1>{st.session_state.buenas}</h1></div>", unsafe_allow_html=True)
     with c2: st.markdown(f"<div style='padding:20px; border-radius:15px; background-color:#641212; text-align:center;'><h3>Malas</h3><h1>{st.session_state.malas}</h1></div>", unsafe_allow_html=True)
     
     total = st.session_state.buenas * 10
-    st.markdown(f"<h2 style='text-align:center; margin-top:20px;'>Puntaje: {total}/100</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align:center; margin-top:20px;'>Tu Puntaje: {total} / 100</h2>", unsafe_allow_html=True)
     
-    if st.button("🔄 Reiniciar Prueba"):
+    if st.button("🔄 Volver a Intentar"):
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
