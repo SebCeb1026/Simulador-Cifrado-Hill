@@ -20,11 +20,9 @@ st.markdown("""
         background-color: #0D1B2A; color: #778DA9; border: 2px solid #415A77; transition: 0.3s;
     }
     .stButton>button:hover { background-color: #415A77; color: white; border: 2px solid #E0E1DD; }
-    .main-title { text-align: center; color: #E0E1DD; font-weight: 800; }
-    
-    /* Estilos de los cuadros de resultado */
-    .win-box { background-color: #1B4332; padding: 25px; border-radius: 20px; border: 2px solid #2D6A4F; text-align: center; }
-    .lose-box { background-color: #4A0E0E; padding: 25px; border-radius: 20px; border: 2px solid #800E0E; text-align: center; }
+    .win-box { background-color: #1B4332; padding: 30px; border-radius: 20px; border: 2px solid #4ADE80; text-align: center; }
+    .lose-box { background-color: #4A0E0E; padding: 30px; border-radius: 20px; border: 2px solid #F87171; text-align: center; }
+    .sad-face { font-size: 100px; margin: 10px 0; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -61,7 +59,7 @@ if 'indice' not in st.session_state:
 
 # --- PANTALLA INICIAL ---
 if not st.session_state.jugando:
-    st.markdown("<h1 class='main-title'>🔵 IUE: Hill Cipher Game</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>🔐 IUE: Hill Cipher Game</h1>", unsafe_allow_html=True)
     st.latex(r"K = \begin{pmatrix} 3 & 3 \\ 2 & 5 \end{pmatrix}")
     if st.button("Inicio de prueba"):
         st.session_state.preguntas = random.sample(obtener_todas_las_preguntas(), 10)
@@ -85,12 +83,12 @@ elif not st.session_state.terminado:
         with cols[i % 2]:
             if st.button(opc):
                 if opc == actual["c"]:
-                    st.toast("Correcto", icon="✅")
+                    st.toast("¡Bien!", icon="✅")
                     st.session_state.buenas += 1
                 else:
-                    st.toast("Incorrecto", icon="❌")
+                    st.toast("Mal", icon="❌")
                     st.session_state.malas += 1
-                time.sleep(0.4)
+                time.sleep(0.3)
                 if st.session_state.indice < 9: st.session_state.indice += 1
                 else: st.session_state.terminado = True
                 st.rerun()
@@ -103,21 +101,25 @@ else:
         st.balloons()
         st.markdown(f"""
             <div class='win-box'>
-                <h1 style='color: #4ADE80;'>¡PRUEBA SUPERADA! 🏆</h1>
-                <p>Excelente desempeño en criptografía.</p>
-                <h2 style='margin:0;'>Nota Final: {puntaje} / 100</h2>
+                <h1 style='color: #4ADE80;'>¡Felicidades! 🏆</h1>
+                <p>Has aprobado la prueba de criptografía.</p>
+                <h2 style='margin:0;'>Nota: {puntaje} / 100</h2>
             </div>
         """, unsafe_allow_html=True)
+        # Audio de Victoria (Opcional: puedes cambiar el link por uno de tu preferencia)
+        st.audio("https://www.myinstants.com/media/sounds/victory-mario-series.mp3")
     else:
-        st.snow() # Efecto de nieve para "enfriar" los ánimos
         st.markdown(f"""
             <div class='lose-box'>
-                <h1 style='color: #F87171;'>PRUEBA NO SUPERADA ❌</h1>
-                <p>Necesitas repasar los conceptos de matrices.</p>
-                <h2 style='margin:0;'>Nota Final: {puntaje} / 100</h2>
+                <div class='sad-face'>😞</div>
+                <h1 style='color: #F87171;'>No has aprobado</h1>
+                <p>Tu puntaje fue insuficiente. ¡Debes repasar!</p>
+                <h2 style='margin:0;'>Nota: {puntaje} / 100</h2>
             </div>
         """, unsafe_allow_html=True)
+        # Audio de Error
+        st.audio("https://www.myinstants.com/media/sounds/mario-dies.mp3")
     
-    if st.button("🔄 Intentar de nuevo"):
+    if st.button("🔄 Volver a Intentar"):
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
