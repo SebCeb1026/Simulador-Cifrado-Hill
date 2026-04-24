@@ -3,18 +3,15 @@ import numpy as np
 import time
 import random
 
-st.set_page_config(page_title="IUE Hill Quiz - Blue Edition", layout="centered")
+st.set_page_config(page_title="IUE Hill Quiz", layout="centered")
 
 # --- DISEÑO TOTAL BLUE ---
 st.markdown("""
     <style>
-    /* Fondo general en azul muy oscuro */
     .stApp { 
         background-color: #0D1B2A; 
         color: #E0E1DD;
     }
-    
-    /* Estilo de los botones */
     .stButton>button { 
         width: 100%; 
         border-radius: 12px; 
@@ -25,21 +22,12 @@ st.markdown("""
         border: 2px solid #415A77;
         transition: 0.4s;
     }
-    
-    /* Efecto al pasar el mouse por los botones */
     .stButton>button:hover {
         background-color: #415A77;
         color: #E0E1DD;
         border: 2px solid #778DA9;
     }
-    
-    /* Títulos */
-    .main-title { text-align: center; color: #E0E1DD; font-family: 'Segoe UI'; font-weight: 800; }
-    
-    /* Cajas de texto y alertas */
-    .stAlert { background-color: #1B263B; color: #E0E1DD; border: 1px solid #415A77; }
-    
-    /* Resumen final */
+    .main-title { text-align: center; color: #E0E1DD; font-weight: 800; }
     .good-box { padding: 20px; border-radius: 15px; background-color: #1B4332; border: 2px solid #2D6A4F; text-align: center; }
     .bad-box { padding: 20px; border-radius: 15px; background-color: #641212; border: 2px solid #A4161A; text-align: center; }
     </style>
@@ -74,16 +62,18 @@ if 'preguntas' not in st.session_state:
 
 # --- PANTALLA 1: EXPLICACIÓN ---
 if not st.session_state.jugando:
-    st.markdown("<h1 class='main-title'>🔵 IUE: Cifrado Hill Challenge</h1>", unsafe_allow_html=True)
-    st.write("Bienvenido al reto de Álgebra Lineal. Repasa antes de empezar:")
-    st.info("""
-    - **Alfabeto:** A=0, B=1, ..., Z=25.
-    - **Lógica:** Multiplicamos matrices y aplicamos Módulo 26.
-    - **Clave:** La matriz del proyecto es de $2 \\times 2$.
-    """)
-    st.warning("Las respuestas cambiarán de posición en cada pregunta. ¡Mucha suerte!")
+    st.markdown("<h1 class='main-title'>🔵 Cifrado Hill: Fundamentos Técnicos</h1>", unsafe_allow_html=True)
+    st.markdown("""
+    ### 📂 Resumen del Proyecto
+    El **Cifrado Hill** es un sistema criptográfico de sustitución polialfabética basado en el álgebra lineal. Para entender los retos, recuerda:
     
-    if st.button("🔵 INICIAR DESAFÍO AZUL"):
+    * **Representación Numérica:** Transformamos el alfabeto en un espacio vectorial donde $A=0, B=1, ..., Z=25$.
+    * **La Llave (Matriz K):** Utilizamos una matriz cuadrada como clave. Para cifrar, multiplicamos esta matriz por el vector del mensaje.
+    * **Aritmética Modular:** Todos los resultados se calculan en **Módulo 26**. Esto garantiza que el valor final siempre corresponda a una letra del abecedario.
+    * **Proceso:** $C = K \cdot P \pmod{26}$. Si el resultado es un número mayor a 25, buscamos su residuo al dividir por 26.
+    """)
+    
+    if st.button("Inicio de prueba"):
         st.session_state.jugando = True
         st.rerun()
 
