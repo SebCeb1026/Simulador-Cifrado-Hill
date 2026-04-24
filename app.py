@@ -2,9 +2,20 @@ import streamlit as st
 import numpy as np
 import time
 import random
+import base64
 
 # Configuración de página
 st.set_page_config(page_title="IUE - Hill Cipher Challenge", page_icon="🔐", layout="centered")
+
+# --- FUNCIÓN PARA SONIDO AUTOMÁTICO ---
+def play_sound(url):
+    sound_html = f"""
+    <iframe src="{url}" allow="autoplay" style="display:none" id="iframeAudio"></iframe>
+    <audio autoplay>
+        <source src="{url}" type="audio/mp3">
+    </audio>
+    """
+    st.markdown(sound_html, unsafe_allow_html=True)
 
 # --- DISEÑO UI ---
 st.markdown("""
@@ -22,7 +33,7 @@ st.markdown("""
     .stButton>button:hover { background-color: #415A77; color: white; border: 2px solid #E0E1DD; }
     .win-box { background-color: #1B4332; padding: 30px; border-radius: 20px; border: 2px solid #4ADE80; text-align: center; }
     .lose-box { background-color: #4A0E0E; padding: 30px; border-radius: 20px; border: 2px solid #F87171; text-align: center; }
-    .sad-face { font-size: 100px; margin: 10px 0; }
+    .sad-face { font-size: 80px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -51,16 +62,29 @@ def obtener_todas_las_preguntas():
         {"p": "¿Cuál es una ventaja de usar matrices 3×3?", "o": ["Usa menos datos", "Es más rápido", "Es más fácil", "Es más seguro"], "c": "Es más seguro"}
     ]
 
-# --- LÓGICA ---
+# --- LÓGICA DE ESTADO ---
 if 'jugando' not in st.session_state: st.session_state.jugando = False
 if 'indice' not in st.session_state:
     st.session_state.indice, st.session_state.buenas, st.session_state.malas = 0, 0, 0
     st.session_state.terminado = False
+    st.session_state.play_sound = None
 
-# --- PANTALLA INICIAL ---
+# --- PANTALLA INICIAL (EXPLICACIÓN REINCORPORADA) ---
 if not st.session_state.jugando:
-    st.markdown("<h1 style='text-align:center;'>🔐 IUE: Hill Cipher Game</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>🔐 ¡Bienvenidos a los juegos del Cifrado Hill!</h1>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    ### 📂 Instrucciones de Seguridad
+    Antes de comenzar, recuerda los pilares de este cifrado desarrollado por **Lester S. Hill**:
+    
+    - **Conversión:** Transformamos letras en números ($A=0, B=1, ..., Z=25$).
+    - **Álgebra Lineal:** Utilizamos una matriz clave $K$ para cifrar mediante multiplicación.
+    - **Modularidad:** Todos los resultados se reducen en **Módulo 26**.
+    """)
     st.latex(r"K = \begin{pmatrix} 3 & 3 \\ 2 & 5 \end{pmatrix}")
+    
+    st.markdown("Para aprobar, necesitas una nota de **60 o más**. ¡Buena suerte!")
+    
     if st.button("Inicio de prueba"):
         st.session_state.preguntas = random.sample(obtener_todas_las_preguntas(), 10)
         st.session_state.jugando = True
@@ -83,12 +107,15 @@ elif not st.session_state.terminado:
         with cols[i % 2]:
             if st.button(opc):
                 if opc == actual["c"]:
-                    st.toast("¡Bien!", icon="✅")
                     st.session_state.buenas += 1
+                    play_sound("https://www.myinstants.com/media/sounds/level-up-mario.mp3")
+                    st.success("¡Correcto!")
                 else:
-                    st.toast("Mal", icon="❌")
                     st.session_state.malas += 1
-                time.sleep(0.3)
+                    play_sound("https://www.myinstants.com/media/sounds/mario-bros-die.mp3")
+                    st.error("Incorrecto")
+                
+                time.sleep(1.0)
                 if st.session_state.indice < 9: st.session_state.indice += 1
                 else: st.session_state.terminado = True
                 st.rerun()
@@ -99,26 +126,24 @@ else:
     
     if puntaje >= 60:
         st.balloons()
+        play_sound("https://www.myinstants.com/media/sounds/victory-mario-series.mp3")
         st.markdown(f"""
             <div class='win-box'>
-                <h1 style='color: #4ADE80;'>¡Felicidades! 🏆</h1>
-                <p>Has aprobado la prueba de criptografía.</p>
-                <h2 style='margin:0;'>Nota: {puntaje} / 100</h2>
+                <h1 style='color: #4ADE80;'>¡PRUEBA SUPERADA! 🏆</h1>
+                <p>Eres un maestro de la criptografía.</p>
+                <h2 style='margin:0;'>Nota Final: {puntaje} / 100</h2>
             </div>
         """, unsafe_allow_html=True)
-        # Audio de Victoria (Opcional: puedes cambiar el link por uno de tu preferencia)
-        st.audio("https://www.myinstants.com/media/sounds/victory-mario-series.mp3")
     else:
+        play_sound("https://www.myinstants.com/media/sounds/game-over-mario-bros.mp3")
         st.markdown(f"""
             <div class='lose-box'>
                 <div class='sad-face'>😞</div>
-                <h1 style='color: #F87171;'>No has aprobado</h1>
-                <p>Tu puntaje fue insuficiente. ¡Debes repasar!</p>
-                <h2 style='margin:0;'>Nota: {puntaje} / 100</h2>
+                <h1 style='color: #F87171;'>PRUEBA NO SUPERADA</h1>
+                <p>Puntaje insuficiente. ¡Sigue estudiando!</p>
+                <h2 style='margin:0;'>Nota Final: {puntaje} / 100</h2>
             </div>
         """, unsafe_allow_html=True)
-        # Audio de Error
-        st.audio("https://www.myinstants.com/media/sounds/mario-dies.mp3")
     
     if st.button("🔄 Volver a Intentar"):
         for key in list(st.session_state.keys()): del st.session_state[key]
