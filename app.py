@@ -3,67 +3,32 @@ import numpy as np
 import time
 import random
 
-# Configuración de página con icono de candado
+# Configuración de página
 st.set_page_config(page_title="IUE - Hill Cipher Challenge", page_icon="🔐", layout="centered")
 
-# --- DISEÑO UI AVANZADO (AZUL TECNOLÓGICO) ---
+# --- DISEÑO UI ---
 st.markdown("""
     <style>
-    /* Fondo con degradado sutil */
-    .stApp { 
-        background: linear-gradient(135deg, #0D1B2A 0%, #1B263B 100%);
-        color: #E0E1DD;
-    }
-    
-    /* Tarjeta de pregunta */
+    .stApp { background: linear-gradient(135deg, #0D1B2A 0%, #1B263B 100%); color: #E0E1DD; }
     .question-card {
-        background-color: #1B263B;
-        padding: 30px;
-        border-radius: 20px;
-        border: 1px solid #415A77;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        margin-bottom: 25px;
-        text-align: center;
+        background-color: #1B263B; padding: 30px; border-radius: 20px;
+        border: 1px solid #415A77; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        margin-bottom: 25px; text-align: center;
     }
-
-    /* Estilo de los botones de opciones */
     .stButton>button { 
-        width: 100%; 
-        border-radius: 15px; 
-        height: 4em; 
-        font-weight: 600; 
-        font-size: 16px;
-        background-color: #0D1B2A;
-        color: #778DA9;
-        border: 2px solid #415A77;
-        transition: all 0.3s ease;
-        margin-bottom: 10px;
+        width: 100%; border-radius: 15px; height: 3.8em; font-weight: 600; 
+        background-color: #0D1B2A; color: #778DA9; border: 2px solid #415A77; transition: 0.3s;
     }
+    .stButton>button:hover { background-color: #415A77; color: white; border: 2px solid #E0E1DD; }
+    .main-title { text-align: center; color: #E0E1DD; font-weight: 800; }
     
-    .stButton>button:hover {
-        background-color: #415A77;
-        color: white;
-        border: 2px solid #E0E1DD;
-        transform: translateY(-2px);
-    }
-
-    /* Títulos y textos */
-    .main-title { 
-        font-family: 'Helvetica Neue', sans-serif;
-        text-align: center; 
-        color: #E0E1DD; 
-        font-weight: 800; 
-        letter-spacing: 1px;
-    }
-    
-    /* Barra de progreso personalizada */
-    .stProgress > div > div > div > div {
-        background-color: #1E88E5;
-    }
+    /* Estilos de los cuadros de resultado */
+    .win-box { background-color: #1B4332; padding: 25px; border-radius: 20px; border: 2px solid #2D6A4F; text-align: center; }
+    .lose-box { background-color: #4A0E0E; padding: 25px; border-radius: 20px; border: 2px solid #800E0E; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS DE TUS 20 PREGUNTAS ---
+# --- BASE DE DATOS DE PREGUNTAS ---
 def obtener_todas_las_preguntas():
     return [
         {"p": "¿Qué es el cifrado Hill?", "o": ["Un método de compresión", "Un cifrado basado en matrices", "Un sistema binario", "Un método gráfico"], "c": "Un cifrado basado en matrices"},
@@ -88,50 +53,26 @@ def obtener_todas_las_preguntas():
         {"p": "¿Cuál es una ventaja de usar matrices 3×3?", "o": ["Usa menos datos", "Es más rápido", "Es más fácil", "Es más seguro"], "c": "Es más seguro"}
     ]
 
-# --- LÓGICA DE ESTADO ---
+# --- LÓGICA ---
 if 'jugando' not in st.session_state: st.session_state.jugando = False
 if 'indice' not in st.session_state:
-    st.session_state.indice = 0
-    st.session_state.buenas = 0
-    st.session_state.malas = 0
+    st.session_state.indice, st.session_state.buenas, st.session_state.malas = 0, 0, 0
     st.session_state.terminado = False
 
-# --- PANTALLA DE INICIO ---
+# --- PANTALLA INICIAL ---
 if not st.session_state.jugando:
     st.markdown("<h1 class='main-title'>🔵 IUE: Hill Cipher Game</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center;'>Pon a prueba tus conocimientos en Álgebra Lineal</p>", unsafe_allow_html=True)
-    
-    with st.container():
-        st.markdown("""
-        <div style='background-color:#1B263B; padding:20px; border-radius:15px; border-left:5px solid #1E88E5;'>
-        <strong>Resumen Técnico:</strong><br>
-        1. A=0, B=1... Z=25.<br>
-        2. La clave es la matriz K.<br>
-        3. Usamos Módulo 26 para todas las operaciones.
-        </div>
-        """, unsafe_allow_html=True)
-        st.latex(r"K = \begin{pmatrix} 3 & 3 \\ 2 & 5 \end{pmatrix}")
-    
+    st.latex(r"K = \begin{pmatrix} 3 & 3 \\ 2 & 5 \end{pmatrix}")
     if st.button("Inicio de prueba"):
         st.session_state.preguntas = random.sample(obtener_todas_las_preguntas(), 10)
         st.session_state.jugando = True
         st.rerun()
 
-# --- PANTALLA DE JUEGO ---
+# --- PANTALLA JUEGO ---
 elif not st.session_state.terminado:
     actual = st.session_state.preguntas[st.session_state.indice]
-    
-    # Barra de progreso
-    progreso = (st.session_state.indice) / 10
-    st.progress(progreso)
-    st.markdown(f"<p style='text-align:center; font-size:12px; color:#778DA9;'>Progreso: {st.session_state.indice}/10</p>", unsafe_allow_html=True)
-
-    # Tarjeta de Pregunta
-    st.markdown(f"""
-    <div class='question-card'>
-        <h2 style='color:#E0E1DD; margin-bottom:0;'>{actual['p']}</h2>
-    </div>
-    """, unsafe_allow_html=True)
+    st.progress(st.session_state.indice / 10)
+    st.markdown(f"<div class='question-card'><h2>{actual['p']}</h2></div>", unsafe_allow_html=True)
     
     if f"opciones_{st.session_state.indice}" not in st.session_state:
         ops = actual["o"].copy()
@@ -144,31 +85,39 @@ elif not st.session_state.terminado:
         with cols[i % 2]:
             if st.button(opc):
                 if opc == actual["c"]:
-                    st.toast("¡Correcto! 💎", icon="✅")
+                    st.toast("Correcto", icon="✅")
                     st.session_state.buenas += 1
                 else:
-                    st.toast("Incorrecto ❌", icon="⚠️")
+                    st.toast("Incorrecto", icon="❌")
                     st.session_state.malas += 1
-                
-                time.sleep(0.5)
+                time.sleep(0.4)
                 if st.session_state.indice < 9: st.session_state.indice += 1
                 else: st.session_state.terminado = True
                 st.rerun()
 
-# --- PANTALLA FINAL ---
+# --- PANTALLA RESULTADOS ---
 else:
-    st.balloons()
-    st.markdown("<h1 class='main-title'>🏁 ¡Resultados Finales!</h1>", unsafe_allow_html=True)
+    puntaje = st.session_state.buenas * 10
     
-    res_cols = st.columns(2)
-    with res_cols[0]:
-        st.markdown(f"<div style='background-color:#1B4332; padding:20px; border-radius:20px; text-align:center;'><h3>✅ Aciertos</h3><h1>{st.session_state.buenas}</h1></div>", unsafe_allow_html=True)
-    with res_cols[1]:
-        st.markdown(f"<div style='background-color:#641212; padding:20px; border-radius:20px; text-align:center;'><h3>❌ Fallos</h3><h1>{st.session_state.malas}</h1></div>", unsafe_allow_html=True)
+    if puntaje >= 60:
+        st.balloons()
+        st.markdown(f"""
+            <div class='win-box'>
+                <h1 style='color: #4ADE80;'>¡PRUEBA SUPERADA! 🏆</h1>
+                <p>Excelente desempeño en criptografía.</p>
+                <h2 style='margin:0;'>Nota Final: {puntaje} / 100</h2>
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.snow() # Efecto de nieve para "enfriar" los ánimos
+        st.markdown(f"""
+            <div class='lose-box'>
+                <h1 style='color: #F87171;'>PRUEBA NO SUPERADA ❌</h1>
+                <p>Necesitas repasar los conceptos de matrices.</p>
+                <h2 style='margin:0;'>Nota Final: {puntaje} / 100</h2>
+            </div>
+        """, unsafe_allow_html=True)
     
-    total = st.session_state.buenas * 10
-    st.markdown(f"<h2 style='text-align:center; margin-top:30px;'>Puntaje Total: {total}/100</h2>", unsafe_allow_html=True)
-    
-    if st.button("🔄 Reiniciar Desafío"):
+    if st.button("🔄 Intentar de nuevo"):
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
