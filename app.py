@@ -1,72 +1,72 @@
 import streamlit as st
 import numpy as np
+import time
+import random
 
-# Configuración de la página
-st.set_page_config(page_title="Simulador Cifrado Hill", layout="centered")
+st.set_page_config(page_title="Hill Challenge IUE", layout="centered")
 
-st.title("🔐 Simulador Cifrado Hill - IUE")
-st.markdown("Basado en el proyecto de Álgebra Lineal 2026[cite: 1, 12].")
+# --- TÍTULO Y EXPLICACIÓN CORTA ---
+st.title("🔐 Cifrado Hill: El Desafío")
 
-# --- FUNCIONES DE APOYO ---
-def text_to_nums(text):
-    return [ord(c.upper()) - ord('A') for c in text if c.isalpha()]
-
-def nums_to_text(nums):
-    return "".join([chr(int(n) % 26 + ord('A')) for n in nums])
-
-def get_mod_inverse(a, m):
-    for x in range(1, m):
-        if (a * x) % m == 1:
-            return x
-    return None
-
-# --- MENÚ LATERAL ---
-st.sidebar.header("Configuración")
-dimension = st.sidebar.selectbox("Dimensión de la Matriz", [2, 3])
-modo = st.sidebar.radio("Operación", ["Cifrar", "Descifrar"])
-
-# --- ENTRADA DE DATOS ---
-st.subheader("1. Configura tu Matriz Clave (K)")
-cols = st.columns(dimension)
-matrix_values = []
-for i in range(dimension):
-    with cols[i]:
-        for j in range(dimension):
-            val = st.number_input(f"K[{i},{j}]", value=0, key=f"k{i}{j}")
-            matrix_values.append(val)
-
-key_matrix = np.array(matrix_values).reshape(dimension, dimension)
-
-mensaje_input = st.text_input("2. Escribe tu mensaje:", value="MATRIZ" if dimension == 2 else "ALGEBRA")
-
-# --- PROCESAMIENTO ---
-if st.button("Ejecutar Aplicación"):
-    # Validar determinante [cite: 40, 44]
-    det = int(np.round(np.linalg.det(key_matrix))) % 26
-    inv_det = get_mod_inverse(det, 26)
+with st.expander("📖 Haz clic aquí para aprender cómo jugar (Explicación rápida)"):
+    st.markdown("""
+    El **Cifrado Hill** usa álgebra lineal para proteger mensajes. 
+    1. **Convertir:** Cada letra es un número (A=0, B=1, C=2...).
+    2. **Multiplicar:** Multiplicamos una **matriz clave** por los números de la palabra.
+    3. **Módulo 26:** Al resultado se le aplica el residuo de dividir por 26 para que siempre sea una letra.
     
-    if inv_det is None:
-        st.error(f"⚠️ Matriz inválida: El determinante modular es {det}, el cual no tiene inverso en mod 26. El descifrado sería imposible[cite: 40].")
-    else:
-        nums = text_to_nums(mensaje_input)
-        # Relleno (Padding) con X [cite: 34, 76]
-        while len(nums) % dimension != 0:
-            nums.append(23)
-        
-        matrix_to_use = key_matrix
-        if modo == "Descifrar":
-            # Cálculo de la inversa modular 
-            adjugate = np.round(np.linalg.det(key_matrix) * np.linalg.inv(key_matrix)).astype(int)
-            matrix_to_use = (inv_det * adjugate) % 26
-            st.info("Utilizando Matriz Inversa para descifrar.")
+    **Ejemplo rápido:** Si la matriz es $\\begin{pmatrix} 3 & 3 \\\\ 2 & 5 \\end{pmatrix}$ y la palabra es **MA** (12, 0):
+    * $3(12) + 3(0) = 36 \\rightarrow$ en módulo 26 es **10 (K)**.
+    * $2(12) + 5(0) = 24 \\rightarrow$ en módulo 26 es **24 (Y)**.
+    * **Resultado:** KY.
+    """)
 
-        # Aplicar transformación lineal C = K * P (mod 26) [cite: 37]
-        res_nums = []
-        for i in range(0, len(nums), dimension):
-            block = np.array(nums[i:i+dimension])
-            res_block = np.dot(matrix_to_use, block) % 26
-            res_nums.extend(res_block)
-        
-        resultado = nums_to_text(res_nums)
-        st.success(f"### Resultado {modo}ado: {resultado}")
-        st.json({"Matriz utilizada": matrix_to_use.tolist(), "Determinante modular": det})
+st.divider()
+
+# --- LÓGICA DEL JUEGO ---
+if 'puntos' not in st.session_state:
+    st.session_state.puntos = 0
+if 'reto_actual' not in st.session_state:
+    st.session_state.palabra = random.choice(["MA", "TR", "IZ", "BE", "LA"])
+    st.session_state.K = np.array([[3, 3], [2, 5]])
+    st.session_state.inicio = time.time()
+
+# --- INTERFAZ DEL JUEGO ---
+col1, col2 = st.columns([1, 1])
+with col1:
+    st.metric("🏆 Puntaje", st.session_state.puntos)
+with col2:
+    tiempo_transcurrido = time.time() - st.session_state.inicio
+    tiempo_restante = max(0, 60 - int(tiempo_transcurrido))
+    st.metric("⏳ Tiempo", f"{tiempo_restante}s")
+
+st.info(f"### RETO: Cifra la palabra '{st.session_state.palabra}'")
+st.write("Usa la matriz del proyecto: $K = \\begin{pmatrix} 3 & 3 \\\\ 2 & 5 \\end{pmatrix}$")
+
+# Entrada de respuesta
+respuesta = st.text_input("Tu respuesta (2 letras):", key="ans").upper()
+
+if st.button("Comprobar"):
+    # Validación matemática
+    nums = [ord(c) - ord('A') for c in st.session_state.palabra]
+    res_nums = np.dot(st.session_state.K, np.array(nums)) % 26
+    correcta = "".join([chr(int(n) + ord('A')) for n in res_nums])
+
+    if respuesta == correcta:
+        st.success(f"¡Excelente! {st.session_state.palabra} es {correcta}. +10 puntos")
+        st.session_state.puntos += 10
+        st.balloons()
+        time.sleep(2)
+        # Generar nuevo reto
+        st.session_state.palabra = random.choice(["HE", "ID", "AD", "GO"])
+        st.session_state.inicio = time.time()
+        st.rerun()
+    else:
+        st.error("¡Casi! Revisa la multiplicación y el módulo 26.")
+
+if tiempo_restante == 0:
+    st.warning("¡Se acabó el tiempo! Dale a 'Reiniciar' para volver a intentar.")
+    if st.button("Reiniciar Juego"):
+        st.session_state.puntos = 0
+        st.session_state.inicio = time.time()
+        st.rerun()
